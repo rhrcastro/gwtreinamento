@@ -121,4 +121,32 @@ public class UsuarioDAO {
         conexao.setCon(null);
         return listaUsuarios;
     }
+    public Usuario getUsuarioByEmaileSenha(Usuario usuario) throws ClassNotFoundException, SQLException {
+        conexao.conectar("jdbc:postgresql://192.168.0.71:5432/K4STR0", "postgres", "postgres@2018@");
+        Usuario usuarioRetornado;
+        try {
+            sql = "select * from usuario where login = ? and senha = ?";
+            prepSt = conexao.getCon().prepareStatement(sql);
+            int index = 0;
+            prepSt.setString(++index, usuario.getLogin());
+            prepSt.setString(++index, usuario.getSenha());
+            usuarioRetornado = new Usuario();
+            
+            System.out.println(prepSt);
+            
+            ResultSet rs = prepSt.executeQuery();
+            if(rs.next()) {
+                usuarioRetornado.setId(rs.getInt("id"));
+                usuarioRetornado.setLogin(rs.getString("login"));
+                usuarioRetornado.setSenha(rs.getString("senha"));
+                return usuarioRetornado;
+            } 
+        } catch(SQLException sx) {
+            if (conexao.getCon() != null) {
+                conexao.getCon().close();
+            }
+        }
+        conexao.setCon(null);
+        return usuarioRetornado = null;
+    }
 }

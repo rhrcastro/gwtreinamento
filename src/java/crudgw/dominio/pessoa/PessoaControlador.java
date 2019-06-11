@@ -1,6 +1,5 @@
 package crudgw.dominio.pessoa;
 
-import crudgw.dominio.usuario.UsuarioDAO;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.SQLException;
@@ -12,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import crudgw.dominio.pessoa.Pessoa;
 import crudgw.dominio.pessoa.PessoaDAO;
 import crudgw.dominio.usuario.Usuario;
+import crudgw.dominio.usuario.UsuarioControlador;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,10 +20,8 @@ import java.util.logging.Logger;
 public class PessoaControlador extends HttpServlet {
     private static final String CADASTRAR = "cadastrar";
     private static final String EDITAR_PESSOA = "editarPessoa";
-    private static final String EDITAR_USUARIO = "editarUsuario";
-    private static final String EXCLUIR_USUARIO = "excluirUsuario";
     private static final String LISTAR_PESSOAS = "listarPessoas";
-    private static final String LISTAR_USUARIOS = "listarUsuarios";
+    private static final UsuarioControlador usuarioControlador = new UsuarioControlador();
     
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, SQLException, ClassNotFoundException {
@@ -32,42 +30,24 @@ public class PessoaControlador extends HttpServlet {
             try {
                 String acao = request.getParameter("acao");
                 if (acao.equals(EDITAR_PESSOA)) {
-                    Usuario usuario = doUsuario(request, response);
+                    Usuario usuario = usuarioControlador.doUsuario(request, response);
                     Pessoa pessoa = doPessoa(request, response, usuario);
                     editarPessoa(pessoa);
                 }else if (acao.equals(CADASTRAR)) {
-                    Usuario usuario = doUsuario(request, response);
-                    cadastrarUsuario(usuario);
+                    Usuario usuario = usuarioControlador.doUsuario(request, response);
+                    usuarioControlador.cadastrarUsuario(usuario);
                     
                     Pessoa pessoa = doPessoa(request, response, usuario);
-                    cadastrarPessoa(pessoa);   
-                } else if(acao.equals(EXCLUIR_USUARIO)) {
-                    Usuario usuario = doUsuario(request, response);
-                    deletarUsuario(usuario);
-            }   else if(acao.equals(EDITAR_USUARIO)) {
-                    Usuario usuario = doUsuario(request, response);
-                    editarUsuario(usuario);
+                    cadastrarPessoa(pessoa);
+                    
             }   else if(acao.equals(LISTAR_PESSOAS)) {
                     listarPessoas();
-            }   else if(acao.equals(LISTAR_USUARIOS)) {             
-                    listarUsuarios();
             }
         } catch (Exception ex) {
                 System.out.println(ex);
         } finally {
                 out.close();
             }
-    }
-    private Usuario doUsuario(HttpServletRequest request, HttpServletResponse response) throws SQLException, ClassNotFoundException {
-        Usuario usuario = new Usuario();
-        usuario.setLogin(request.getParameter("login"));
-        usuario.setSenha(request.getParameter("senha"));
-        if (request.getParameter("idusuario") != null ){
-            int id = Integer.parseInt(request.getParameter("idusuario"));
-            usuario.setId(id);
-        }
-        return usuario;
-             
     }
    private Pessoa doPessoa(HttpServletRequest request, HttpServletResponse response, Usuario usuario)  {
        Pessoa pessoa = new Pessoa();
@@ -104,36 +84,16 @@ public class PessoaControlador extends HttpServlet {
        PessoaDAO pessoaDAO = new PessoaDAO();
        pessoaDAO.editarPessoa(pessoa);
    }
-   public void deletarUsuario(Usuario usuario) throws ClassNotFoundException, SQLException {
-       UsuarioDAO usuarioDAO = new UsuarioDAO();
-       usuarioDAO.deletarUsuario(usuario);
-   }
-   public void cadastrarUsuario(Usuario usuario) throws ClassNotFoundException, SQLException{
-       UsuarioDAO usuarioDAO = new UsuarioDAO();
-       usuarioDAO.cadastrarUsuario(usuario);
-   }
    public void cadastrarPessoa(Pessoa pessoa) throws ClassNotFoundException, SQLException {
        PessoaDAO pessoaDAO = new PessoaDAO();
        pessoaDAO.cadastrarPessoa(pessoa);
    }
-   public void editarUsuario(Usuario usuario) throws ClassNotFoundException, SQLException {
-       UsuarioDAO usuarioDAO = new UsuarioDAO();
-       usuarioDAO.editarUsuario(usuario);
-   }
    public void listarPessoas() throws ClassNotFoundException, SQLException {
        PessoaDAO pessoaDAO = new PessoaDAO();
        List<Pessoa> listaPessoas = pessoaDAO.listarPessoas();
-        
-       for (Pessoa pessoa: listaPessoas) {
-           System.out.println("ID pessoa:" + pessoa.getId() + " " + "Nome da pessoa:" + pessoa.getNome() + " " + "CPF da pessoa:" + pessoa.getCpf());
-       }
-   }
-   public void listarUsuarios() throws ClassNotFoundException, SQLException {
-       UsuarioDAO usuarioDAO = new UsuarioDAO();
-       List<Usuario> listaUsuarios = usuarioDAO.listarUsuarios();
        
-       for (Usuario usuario: listaUsuarios) {
-           System.out.println("ID do usuário: " + usuario.getId() + " " + "Login do Usuário: " + usuario.getLogin());
+       for (Pessoa pessoa: listaPessoas) {
+           System.out.println("Nome: " + pessoa.getNome() + " " + "CPF: " + pessoa.getCpf());
     }
    }
 }
